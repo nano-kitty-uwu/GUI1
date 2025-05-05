@@ -1,46 +1,100 @@
-using UnityEngine;
-using System.Collections.Generic;
+﻿using UnityEngine;
 using System.Collections;
 using TMPro;
 using UnityEngine.UI;
+
 public class Quiz : MonoBehaviour
 {
-	[SerializeField] TextMeshProUGUI questionText;
-	[SerializeField] QuestionCardSO cardSO;
-	[SerializeField] GameObject[] answerBTNs;
+    [Header("Quiz Setup")]
+    [SerializeField] TextMeshProUGUI questionText;
+    [SerializeField] GameObject[] answerBTNs;
+    [SerializeField] QuestionCardSO[] questionList;
 
-	int correctAnswerIndex;
-	Sprite defaultAnswerSprite;
-	Sprite correctAnswerSprite;
+    [Header("Colors")]
+    [SerializeField] Color defaultColor = Color.white;
+    [SerializeField] Color correctColor = Color.green;
+    [SerializeField] Color wrongColor = Color.red;
 
-	private void Start()
-	{
-		questionText.text = cardSO.GetQuestion();
+    private int currentQuestionIndex = 0;
+    private bool hasAnswered = false;
 
-		for(int i = 0;i< answerBTNs.Length; i++)
-		{
-			TextMeshProUGUI buttonText = answerBTNs[i].GetComponentInChildren<TextMeshProUGUI>();
-			buttonText.text = cardSO.GetAnswer(i);
-		}
-	}
-	public void OnAnswerSelected(int index)
-	{
-		Image buttonImage;
-		if (index== cardSO.GetCorrectAnswerIndex())
-		{
-			questionText.text = "CORRECT";
-			buttonImage = answerBTNs[index].GetComponent<Image>();
-			buttonImage.sprite = correctAnswerSprite;
-		}
-		else
-		{
-			correctAnswerIndex = cardSO.GetCorrectAnswerIndex();
-			string correctAnswer = cardSO.GetAnswer(correctAnswerIndex);
+    private void Start()
+    {
+        DisplayQuestion();
+    }
 
-			questionText.text = "Sorry,the correct answer was;\n"+correctAnswer;
-			buttonImage = answerBTNs[correctAnswerIndex].GetComponent<Image>();
-			buttonImage.sprite = correctAnswerSprite;
-		}
-	}
+    void DisplayQuestion()
+    {
+        hasAnswered = false;
 
+        if (currentQuestionIndex >= questionList.Length)
+        {
+            questionText.text = "Quiz complet!";
+            foreach (GameObject btn in answerBTNs)
+            {
+                btn.SetActive(false);
+            }
+            return;
+        }
+
+        QuestionCardSO currentCard = questionList[currentQuestionIndex];
+        questionText.text = currentCard.GetQuestion();
+
+        for (int i = 0; i < answerBTNs.Length; i++)
+        {
+            TextMeshProUGUI buttonText = answerBTNs[i].GetComponentInChildren<TextMeshProUGUI>();
+            buttonText.text = currentCard.GetAnswer(i);
+
+            Button button = answerBTNs[i].GetComponent<Button>();
+            button.interactable = true;
+
+            Image img = answerBTNs[i].GetComponent<Image>();
+            img.color = defaultColor;
+        }
+    }
+
+    public void OnAnswerSelected(int index)
+    {
+        if (hasAnswered) return;
+        hasAnswered = true;
+
+        QuestionCardSO currentCard = questionList[currentQuestionIndex];
+        int correctIndex = currentCard.GetCorrectAnswerIndex();
+
+        if (index == correctIndex)
+        {
+            questionText.text = "CORECT!";
+            SetButtonColor(index, correctColor);
+        }
+        else
+        {
+            questionText.text = "Greșit. Corect era:\n" + currentCard.GetAnswer(correctIndex);
+            SetButtonColor(index, wrongColor);
+            SetButtonColor(correctIndex, correctColor);
+        }
+
+        DisableAllButtons();
+        StartCoroutine(NextQuestionAfterDelay(2f));
+    }
+
+    IEnumerator NextQuestionAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        currentQuestionIndex++;
+        DisplayQuestion();
+    }
+
+    void SetButtonColor(int index, Color color)
+    {
+        Image img = answerBTNs[index].GetComponent<Image>();
+        img.color = color;
+    }
+
+    void DisableAllButtons()
+    {
+        foreach (GameObject btn in answerBTNs)
+        {
+            btn.GetComponent<Button>().interactable = false;
+        }
+    }
 }

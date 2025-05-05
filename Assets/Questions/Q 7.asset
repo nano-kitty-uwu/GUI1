@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b37e3c71d53a67a47be2508ccd7404ef, type: 3}
-  m_Name: Q 1
+  m_Name: Q 7
   m_EditorClassIdentifier: 
-  question: What is the capital of France?
+  question: Which animal is known as the king of the jungle?
   ansewrs:
-  - Berlin
-  - Madrid
-  - Paris
-  - Rome
-  correctAnswerIndex: 2
+  - Tiger
+  - Lion
+  - Elephant
+  - Bear
+  correctAnswerIndex: 1
